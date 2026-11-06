@@ -173,10 +173,77 @@ int main()
     }
     cout << endl;
 
-    return 0;
-}
+    int minPasajeros = -1;
+    int idxMin = -1;
 
-    archTexto.close();
+    for (int i = 0; i < 15; i++)
+    {
+        if (aeropuertos[i].pasajeros > 0)
+        {
+            if (minPasajeros == -1 || aeropuertos[i].pasajeros < minPasajeros)
+            {
+                minPasajeros = aeropuertos[i].pasajeros;
+                idxMin = i;
+            }
+        }
+    }
+
+    if (idxMin != -1)
+    {
+        cout << "Aeropuerto que envió menor cantidad de pasajeros: "
+             << aeropuertos[idxMin].codigo << ": " << aeropuertos[idxMin].nombre << endl;
+        cout << "Pasajeros enviados: " << aeropuertos[idxMin].pasajeros
+             << " en " << aeropuertos[idxMin].vuelos << " vuelos." << endl;
+    }
+    cout << endl;
+
+    long pasajerosPorDia[7] = {0};
+
+    ifstream archBin2("arribos.bin", ios::binary);
+    while (archBin2.read(reinterpret_cast<char *>(&reg.pais), sizeof(int)))
+    {
+        archBin2.read(reinterpret_cast<char *>(&reg.aerolinea), sizeof(int));
+        archBin2.read(reg.iata, 3);
+        reg.iata[3] = '\0';
+        archBin2.read(reinterpret_cast<char *>(&reg.cantPasajeros), sizeof(int));
+        archBin2.read(reinterpret_cast<char *>(&reg.dia), sizeof(int));
+
+        if (reg.pais == paisMax && reg.aerolinea == aeroMax)
+        {
+            if (reg.dia >= 0 && reg.dia < 7)
+            {
+                pasajerosPorDia[reg.dia] += reg.cantPasajeros;
+            }
+        }
+    }
+    archBin2.close();
+
+    string dias[7] = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"};
+    int ordenDias[7] = {0, 1, 2, 3, 4, 5, 6};
+
+    for (int i = 0; i < 6; i++)
+    {
+        for (int j = i + 1; j < 7; j++)
+        {
+            if (pasajerosPorDia[ordenDias[i]] < pasajerosPorDia[ordenDias[j]])
+            {
+                int aux = ordenDias[i];
+                ordenDias[i] = ordenDias[j];
+                ordenDias[j] = aux;
+            }
+        }
+    }
+
+    cout << "La mayor cantidad de pasajeros (" << maxPasajeros
+         << ") se dio para la combinación " << paises[paisMax]
+         << " con aerolínea " << aerolineas[aeroMax]
+         << " según el siguiente detalle diario:" << endl;
+    cout << "Día\tCantidad" << endl;
+    for (int i = 0; i < 7; i++)
+    {
+        int d = ordenDias[i];
+        cout << dias[d] << "\t" << pasajerosPorDia[d] << endl;
+    }
 
     return 0;
 }
