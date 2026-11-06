@@ -108,5 +108,75 @@ int main()
     }
     archTexto.close();
 
+    int matrizTotales[5][8] = {0};
+
+    ifstream archBin("arribos.bin", ios::binary);
+    if (!archBin.is_open())
+    {
+        cout << "Error al abrir arribos.bin" << endl;
+        return 1;
+    }
+
+    Arribo reg;
+    while (archBin.read(reinterpret_cast<char *>(&reg.pais), sizeof(int)))
+    {
+        archBin.read(reinterpret_cast<char *>(&reg.aerolinea), sizeof(int));
+        archBin.read(reg.iata, 3);
+        reg.iata[3] = '\0';
+        archBin.read(reinterpret_cast<char *>(&reg.cantPasajeros), sizeof(int));
+        archBin.read(reinterpret_cast<char *>(&reg.dia), sizeof(int));
+
+        if (reg.pais >= 0 && reg.pais < 5 && reg.aerolinea >= 0 && reg.aerolinea < 8)
+        {
+            matrizTotales[reg.pais][reg.aerolinea] += reg.cantPasajeros;
+        }
+
+        for (int i = 0; i < 15; i++)
+        {
+            if (compararStrings(aeropuertos[i].codigo, reg.iata) == 0)
+            {
+                aeropuertos[i].pasajeros += reg.cantPasajeros;
+                aeropuertos[i].vuelos++;
+                break;
+            }
+        }
+    }
+    archBin.close();
+
+    cout << "Listado de totales de pasajeros" << endl;
+    cout << "Pais\t\tAerolinea\t\t\tCant. Pasajeros" << endl;
+    int maxPasajeros = -1;
+    int paisMax = -1;
+    int aeroMax = -1;
+
+    for (int p = 0; p < 5; p++)
+    {
+        for (int a = 0; a < 8; a++)
+        {
+            cout << paises[p] << "\t\t" << aerolineas[a];
+        
+            if (aerolineas[a] == "GOL" || aerolineas[a] == "IndiGo") {
+                cout << "\t\t\t";
+            } else {
+                cout << "\t\t";
+            }
+        
+            cout << matrizTotales[p][a] << endl;
+
+            if (matrizTotales[p][a] > maxPasajeros)
+            {
+                maxPasajeros = matrizTotales[p][a];
+                paisMax = p;
+                aeroMax = a;
+            }
+        }
+    }
+    cout << endl;
+
+    return 0;
+}
+
+    archTexto.close();
+
     return 0;
 }
